@@ -65,6 +65,8 @@
     <Compile Include="Assets\GPUSkin\Scripts\Common\BetterList.cs" />
     <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation.cs" />
     <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinAnimationData.cs" />
+    <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinAnimationState.cs" />
+    <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinAnimatorData.cs" />
     <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinAnimEvent.cs" />
     <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinBone.cs" />
     <Compile Include="Assets\GPUSkin\Scripts\GPUSkinAnimation\GPUSkinClip.cs" />

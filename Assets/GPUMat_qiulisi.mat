@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: GPUMat_ter
+  m_Name: GPUMat_qiulisi
   m_Shader: {fileID: 4800000, guid: a7dbe599d95516949807a79670568bbd, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

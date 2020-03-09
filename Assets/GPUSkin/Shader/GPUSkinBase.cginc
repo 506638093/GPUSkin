@@ -3,6 +3,7 @@
 
 sampler2D _GPUSkin_TextureMatrix;
 float3 _GPUSkin_TextureSize_NumPixelsPerFrame;
+float4x4 _GPUSkin_BindposeMatrixs[64];
 
 UNITY_INSTANCING_BUFFER_START(GPUSkinProperties)
 UNITY_DEFINE_INSTANCED_PROP(float2, _GPUSkin_FrameIndex_PixelSegmentation)

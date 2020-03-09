@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class GPUSkinAnimationData : ScriptableObject
 {
-    public string guid = null;
-
     public new string name = null;
 
     public List<GPUSkinBone> bones = null;

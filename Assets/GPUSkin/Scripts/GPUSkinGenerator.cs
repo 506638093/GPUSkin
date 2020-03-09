@@ -44,7 +44,7 @@ public class GPUSkinGenerator : MonoBehaviour
 
     [HideInInspector]
     [SerializeField]
-    public GPUSkinQuality skinQuality = GPUSkinQuality.Bone2;
+    public GPUSkinQuality skinQuality = GPUSkinQuality.Bone4;
 
     [HideInInspector]
     [SerializeField]
@@ -369,11 +369,6 @@ public class GPUSkinGenerator : MonoBehaviour
             }
         }
 
-        if (animData == null)
-        {
-            gpuSkinAnimData.guid = System.Guid.NewGuid().ToString();
-        }
-
         gpuSkinClip = new GPUSkinClip();
         gpuSkinClip.name = animClips[samplingClipIndex].name;
         gpuSkinClip.frameRate = GetClipFrameRate(animClip, samplingClipIndex);
@@ -660,7 +655,7 @@ public class GPUSkinGenerator : MonoBehaviour
         {
             Transform boneTransform = bones[i].transform;
             GPUSkinBone currentBone = GetBoneByTransform(boneTransform);
-            frame.matrices[i] = currentBone.bindpose;
+            frame.matrices[i] = Matrix4x4.identity;// currentBone.bindpose;
             do
             {
                 Matrix4x4 mat = Matrix4x4.TRS(currentBone.transform.localPosition, currentBone.transform.localRotation, currentBone.transform.localScale);
