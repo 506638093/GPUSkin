@@ -3,7 +3,6 @@
 
 sampler2D _GPUSkin_TextureMatrix;
 float3 _GPUSkin_TextureSize_NumPixelsPerFrame;
-float4x4 _GPUSkin_BindposeMatrixs[64];
 
 UNITY_INSTANCING_BUFFER_START(GPUSkinProperties)
 UNITY_DEFINE_INSTANCED_PROP(float2, _GPUSkin_FrameIndex_PixelSegmentation)
@@ -49,6 +48,7 @@ inline float4x4 getMatrix(int frameStartIndex, float boneIndex)
 	float4 row1 = tex2Dlod(_GPUSkin_TextureMatrix, indexToUV(matStartIndex + 1));
 	float4 row2 = tex2Dlod(_GPUSkin_TextureMatrix, indexToUV(matStartIndex + 2));
 	float4 row3 = float4(0, 0, 0, 1);
+
 	float4x4 mat = float4x4(row0, row1, row2, row3);
 	return mat;
 }

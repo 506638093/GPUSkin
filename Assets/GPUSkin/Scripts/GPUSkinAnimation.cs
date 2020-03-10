@@ -285,7 +285,7 @@ public class GPUSkinAnimation : MonoBehaviour
         {
             meshRender = go.AddComponent<MeshRenderer>();
         }
-        if(meshRender.sharedMaterial != material)
+        if (meshRender.sharedMaterial != material)
         {
             meshRender.sharedMaterial = material;
         }
@@ -304,6 +304,35 @@ public class GPUSkinAnimation : MonoBehaviour
 
         mpb = new MaterialPropertyBlock();
 
+        SetMaterialProp();
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        if (focus)
+        {
+            OnDeviceLost();
+        }
+    }
+
+    private void OnDeviceLost()
+    {
+        if (texture == null)
+        {
+            return;
+        }
+
+        if (animationMgr.IsDeviceLost(this, Time.time))
+        {
+            texture.SetPixels(animationMgr.GetColors(this), 0);
+            texture.Apply(false);
+
+            SetMaterialProp();
+        }
+    }
+
+    private void SetMaterialProp()
+    {
         meshRender.sharedMaterial.SetTexture(shaderPropID_GPUSkin_TextureMatrix, texture);
         meshRender.sharedMaterial.SetVector(shaderPropID_GPUSkin_TextureSize_NumPixelsPerFrame,
             new Vector4(animData.textureWidth, animData.textureHeight, animData.bones.Count * 3/*treat 3 pixels as a float3x4*/, 0));
@@ -448,6 +477,7 @@ public class GPUSkinAnimation : MonoBehaviour
         {
             return;
         }
+
         lastPlayingClip = playingClip;
         lastPlayingFrameIndex = frameIndex;
 
@@ -532,6 +562,13 @@ public class GPUSkinAnimation : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            OnDeviceLost();
+        }
+#endif
+
         UpdateInternal(Time.deltaTime);
     }
 }

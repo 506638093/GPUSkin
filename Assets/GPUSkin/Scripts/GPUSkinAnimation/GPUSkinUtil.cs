@@ -29,8 +29,9 @@ public class GPUSkinUtil
 
     private static bool bSwitchGpuSkinFloatTexture = false;
 
-    public static Texture2D CreateTexture2D(GPUSkinAnimationData animData)
+    public static Texture2D CreateTexture2D(GPUSkinAnimationData animData, out Color[] pixels)
     {
+        pixels = null;
         if (animData == null)
         {
             return null;
@@ -49,7 +50,7 @@ public class GPUSkinUtil
             texture.name = "GPUSkinTextureMatrix";
             texture.filterMode = FilterMode.Point;
 
-            Color[] pixels = texture.GetPixels();
+            pixels = texture.GetPixels();
             int pixelIndex = 0;
             int clipCount = animData.clips.Count;
             for (int clipIndex = 0; clipIndex < clipCount; ++clipIndex)
@@ -71,8 +72,8 @@ public class GPUSkinUtil
                     }
                 }
             }
-            texture.SetPixels(pixels);
-            texture.Apply();
+            texture.SetPixels(pixels, 0);
+            texture.Apply(false);
 
             return texture;
         }
@@ -89,7 +90,7 @@ public class GPUSkinUtil
             texture.name = "GPUSkinTextureMatrix";
             texture.filterMode = FilterMode.Point;
 
-            Color[] pixels = texture.GetPixels();
+            pixels = texture.GetPixels();
             int pixelIndex = 0;
             int clipCount = animData.clips.Count;
             for (int clipIndex = 0; clipIndex < clipCount; ++clipIndex)
@@ -116,8 +117,8 @@ public class GPUSkinUtil
                     }
                 }
             }
-            texture.SetPixels(pixels);
-            texture.Apply();
+            texture.SetPixels(pixels, 0);
+            texture.Apply(false);
 
             return texture;
         }

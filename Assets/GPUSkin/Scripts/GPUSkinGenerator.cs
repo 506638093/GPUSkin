@@ -653,9 +653,8 @@ public class GPUSkinGenerator : MonoBehaviour
         int numBones = bones.Count;
         for (int i = 0; i < numBones; ++i)
         {
-            Transform boneTransform = bones[i].transform;
-            GPUSkinBone currentBone = GetBoneByTransform(boneTransform);
-            frame.matrices[i] = Matrix4x4.identity;// currentBone.bindpose;
+            GPUSkinBone currentBone = bones[i];
+            frame.matrices[i] = currentBone.bindpose;
             do
             {
                 Matrix4x4 mat = Matrix4x4.TRS(currentBone.transform.localPosition, currentBone.transform.localRotation, currentBone.transform.localScale);
