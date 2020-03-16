@@ -11,6 +11,20 @@ public class GPUSkinGeneratorEditor : Editor
 
     private float time = 0;
 
+    private GPUSkinAnimationData animData = null;
+
+    private Mesh mesh = null;
+
+    private Material previewMaterial = null;
+
+    private RenderTexture       previewRenderTexture    = null;
+    private Camera              previewCamera           = null;
+    private GPUSkinAnimation    previewAnimation        = null;
+    private Rect                previewEditBtnRect;
+    private Vector3             previewCamLookAtOffset  = Vector3.zero;
+    private float               previewTime             = 0;
+    private Rect                previewInteractionRect;
+
     public override void OnInspectorGUI()
     {
         GPUSkinGenerator gen = target as GPUSkinGenerator;
@@ -57,6 +71,20 @@ public class GPUSkinGeneratorEditor : Editor
     private void UpdateHandler()
     {
         GPUSkinGenerator gen = target as GPUSkinGenerator;
+
+        float deltaTime = Time.realtimeSinceStartup - previewTime;
+        if (previewAnimation != null)
+        {
+            //PreviewDrawBounds();
+            //PreviewDrawArrows();
+            //PreviewDrawGrid();
+
+            previewAnimation.UpdateEditor(deltaTime);
+            PreviewInteractionCameraRestriction();
+            previewCamera.Render();
+        }
+        previewTime = Time.realtimeSinceStartup;
+
 
         if (!gen.isSampling && gen.IsSamplingProgress())
         {
@@ -122,6 +150,12 @@ public class GPUSkinGeneratorEditor : Editor
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space();
                 GUI.enabled = guiEnabled;
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("previewMaterial"), new GUIContent("Preview Material"));
+                }
+                EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("skinQuality"), new GUIContent("Quality"));
 
@@ -260,13 +294,144 @@ public class GPUSkinGeneratorEditor : Editor
     {
         BeginBox();
         {
-            if (GUILayout.Button("Preview"))
+            if (GUILayout.Button("Preview And Edit"))
             {
-                
+                animData = gen.animData;
+                mesh = gen.savedMesh;
+                previewMaterial = gen.previewMaterial;
+
+                if (animData == null || mesh == null || previewMaterial == null)
+                {
+                    EditorUtility.DisplayDialog("GPUSkin", "Missing Preview Resources", "OK");
+                }
+                else
+                {
+                    if (previewRenderTexture == null && !EditorApplication.isPlaying)
+                    {
+                        previewRenderTexture = new RenderTexture(1024, 1024, 32, RenderTextureFormat.Default, RenderTextureReadWrite.Default);
+                        previewRenderTexture.hideFlags = HideFlags.HideAndDontSave;
+
+                        GameObject cameroGo = new GameObject("GPUSkinEditorCameraGo");
+                        cameroGo.hideFlags = HideFlags.HideAndDontSave;
+                        previewCamera = cameroGo.AddComponent<Camera>();
+                        previewCamera.hideFlags = HideFlags.HideAndDontSave;
+                        previewCamera.farClipPlane = 100;
+                        previewCamera.targetTexture = previewRenderTexture;
+                        previewCamera.enabled = false;
+                        previewCamera.clearFlags = CameraClearFlags.SolidColor;
+                        previewCamera.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+                        previewCamera.transform.position = new Vector3(999, 1002, 999);
+
+                        GameObject previewGo = new GameObject("GPUSkinEditorPreviewGo");
+                        previewGo.hideFlags = HideFlags.HideAndDontSave;
+                        previewGo.transform.position = new Vector3(999, 999, 1002);
+                        previewAnimation = previewGo.AddComponent<GPUSkinAnimation>();
+                        previewAnimation.hideFlags = HideFlags.HideAndDontSave;
+                        previewAnimation.Init(animData, mesh, previewMaterial);
+                        previewAnimation.CullingMode = GPUSkinCullingMode.AlwaysAnimate;
+
+                    }
+                }
+            }
+
+            GetLastGUIRect(ref previewEditBtnRect);
+
+            if (previewRenderTexture != null)
+            {
+                int previewRectSize = Mathf.Min((int)(previewEditBtnRect.width * 0.98f), 512);
+                EditorGUILayout.BeginHorizontal();
+                {
+                    EditorGUILayout.BeginVertical();
+                    {
+                        GUILayout.Box(previewRenderTexture, GUILayout.Width(previewRectSize), GUILayout.Height(previewRectSize));
+
+
+                        GetLastGUIRect(ref previewInteractionRect);
+                        PreviewInteraction(previewInteractionRect);
+
+                        EditorGUILayout.HelpBox("Drag to Orbit\nCtrl + Drag to Pitch\nAlt+ Drag to Zoom\nPress P Key to Pause", MessageType.None);
+                    }
+                    EditorGUILayout.EndVertical();
+
+                    //EditorGUI.ProgressBar(new Rect(previewInteractionRect.x, previewInteractionRect.y + previewInteractionRect.height, previewInteractionRect.width, 5), previewAnimation.NormalizedTime, string.Empty);
+                }
+                EditorGUILayout.EndHorizontal();
             }
         }
         EndBox();
 
         serializedObject.ApplyModifiedProperties();
+    }
+
+    private void GetLastGUIRect(ref Rect rect)
+    {
+        Rect guiRect = GUILayoutUtility.GetLastRect();
+        if (guiRect.x != 0)
+        {
+            rect = guiRect;
+        }
+    }
+
+    private void PreviewInteractionCameraRestriction()
+    {
+        if (previewAnimation == null)
+        {
+            return;
+        }
+
+        Transform camTrans = previewCamera.transform;
+        Transform modelTrans = previewAnimation.transform;
+        Vector3 lookAtPoint = modelTrans.position + previewCamLookAtOffset;
+
+        Vector3 distV = camTrans.position - modelTrans.position;
+        if (distV.magnitude > 10)
+        {
+            distV.Normalize();
+            distV *= 10;
+            camTrans.position = modelTrans.position + distV;
+        }
+
+        camTrans.LookAt(lookAtPoint);
+    }
+
+    private void PreviewInteraction(Rect rect)
+    {
+        if (previewCamera != null)
+        {
+            Transform camTrans = previewCamera.transform;
+            Transform modelTrans = previewAnimation.transform;
+
+            Vector3 lookAtPoint = modelTrans.position + previewCamLookAtOffset;
+
+            Event e = Event.current;
+
+            Vector2 mousePos = e.mousePosition;
+            if (mousePos.x < rect.x || mousePos.x > rect.x + rect.width || mousePos.y < rect.y || mousePos.y > rect.y + rect.height)
+            {
+                return;
+            }
+
+            EditorGUIUtility.AddCursorRect(rect, MouseCursor.Orbit);
+
+            if (e.type == EventType.MouseDrag)
+            {
+                if (e.control)
+                {
+                    previewCamLookAtOffset.y += e.delta.y * 0.02f;
+                }
+                else if (e.alt)
+                {
+                    camTrans.Translate(0, 0, -e.delta.y * 0.1f, Space.Self);
+                }
+                else
+                {
+                    Vector3 v = camTrans.position - lookAtPoint;
+                    camTrans.Translate(-e.delta.x * 0.1f, e.delta.y * 0.1f, 0, Space.Self);
+                    Vector3 v2 = camTrans.position - lookAtPoint;
+                    v2 = v2.normalized * v.magnitude;
+                    camTrans.position = lookAtPoint + v2;
+                }
+            }
+        }
     }
 }

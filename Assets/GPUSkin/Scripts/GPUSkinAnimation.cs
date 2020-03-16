@@ -263,6 +263,15 @@ public class GPUSkinAnimation : MonoBehaviour
         animationMgr.Unregister(this);
     }
 
+    public void Init(GPUSkinAnimationData animData, Mesh mesh, Material mtrl)
+    {
+        this.animData = animData;
+        this.mesh = mesh;
+        this.material = mtrl;
+
+        StartInit();
+    }
+
     private void StartInit()
     {
         if (animData == null)
@@ -494,8 +503,9 @@ public class GPUSkinAnimation : MonoBehaviour
             frameCrossFade = lastPlayedClip.frames[frameIndexCrossFade];
             crossFadeBlendFactor = Mathf.Clamp01(crossFadeProgress / crossFadeTime);
         }
-        
-        if (Visible || CullingMode == GPUSkinCullingMode.AlwaysAnimate)
+
+        //if (Visible || CullingMode == GPUSkinCullingMode.AlwaysAnimate)
+        if (CullingMode == GPUSkinCullingMode.AlwaysAnimate)
         {
             mpb.SetVector(shaderPorpID_GPUSkin_FrameIndex_PixelSegmentation, new Vector4(frameIndex, playingClip.pixelSegmentation, 0, 0));
             if (isRootMotion)
@@ -571,4 +581,11 @@ public class GPUSkinAnimation : MonoBehaviour
 
         UpdateInternal(Time.deltaTime);
     }
+
+#if UNITY_EDITOR
+    public void UpdateEditor(float deltaTime)
+    {
+        UpdateInternal(Time.deltaTime);
+    }
+#endif
 }

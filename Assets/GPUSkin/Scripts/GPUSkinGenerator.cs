@@ -44,6 +44,10 @@ public class GPUSkinGenerator : MonoBehaviour
 
     [HideInInspector]
     [SerializeField]
+    public Material previewMaterial = null;
+
+    [HideInInspector]
+    [SerializeField]
     public GPUSkinQuality skinQuality = GPUSkinQuality.Bone4;
 
     [HideInInspector]
@@ -568,7 +572,7 @@ public class GPUSkinGenerator : MonoBehaviour
 
                     if (samplingClipIndex == 0)
                     {
-                        Mesh newMesh = CreateNewMesh(smr.sharedMesh, "GPUSkinning_Mesh");
+                        Mesh newMesh = CreateNewMesh(smr.sharedMesh, "GPUSkinMesh");
                         if (savedMesh != null)
                         {
                             newMesh.bounds = savedMesh.bounds;
